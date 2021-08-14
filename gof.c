@@ -8,7 +8,7 @@
     #include <windowns.h>
 #endif
 
-#define ORG '#'
+#define ORG '*'
 #define VAZ '.'
 #define TAM 101
 #define LINESIZE 1024
@@ -22,6 +22,7 @@ void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]);
 void menuInicJogo(char **mat, int nL, int nC);
 void jogaJogoVida(char **m, int nL, int nC);
 void novaMatriz(char **mA, char ***mC, int nL, int nC);
+void matrizAleatoria(char ***mat, int nL, int nC);
 
 typedef struct tab{
     char nomeJogo[TAM];
@@ -96,9 +97,8 @@ void copiaMatriz(char **mat, char **mc, int nL, int nC){
         }
     }
 }
-// le e coloca as posicoes do .csv na matriz de forma aleatoria.
+// le e coloca as posicoes do .csv na matriz de forma "aleatoria".
 void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]){
-
     FILE *fp;
     int i, n, r, r2, j=0;
     char line[LINESIZE];
@@ -127,6 +127,23 @@ void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]){
     fclose(fp);
 }
 
+// coloca todas as posiçoes de forma "aleatoria".
+void matrizAleatoria(char ***mat, int nL, int nC){
+    int i, j, r;
+    srand(time(NULL));
+    limpaMatriz(*mat, nL, nC);
+    for(i=0; i < nL; i++){
+        for(j=0; j < nC; j++){
+            r = rand()%2;
+            if(r){
+                (*mat)[i][j] = ORG;
+            }else{
+                (*mat)[i][j] = VAZ;
+            }
+        }
+    }
+}
+
 void menuInicJogo(char **mat, int nL, int nC){
     int opcao;
     char opt;
@@ -136,7 +153,7 @@ void menuInicJogo(char **mat, int nL, int nC){
     printf("2. Osciladores\n");
     printf("3. Naves espaciais\n");
     printf("4. Arquivo .csv 20 chars\n");
-    printf("default lwss... qualquer tecla.\n");
+    printf("default aleatoria... qualquer tecla.\n");
     printf("opcao: ");
     scanf("%d", &opcao);
     
@@ -151,7 +168,7 @@ void menuInicJogo(char **mat, int nL, int nC){
                 iniciaMatriz(&mat, nL, nC, "et.csv");
             }else{
                 printf("opcao invalida!, carregando a default\n");
-                iniciaMatriz(&mat, nL, nC, "lwss.csv");
+                matrizAleatoria(&mat, nL, nC);
             }
             break;
         case 2:
@@ -164,7 +181,7 @@ void menuInicJogo(char **mat, int nL, int nC){
                 iniciaMatriz(&mat, nL, nC, "sapo.csv");
             }else{
                 printf("opcao invalida!, carregando a default\n");
-                iniciaMatriz(&mat, nL, nC, "lwss.csv");
+                matrizAleatoria(&mat, nL, nC);
             }
             break;
         case 3:
@@ -177,7 +194,7 @@ void menuInicJogo(char **mat, int nL, int nC){
                 iniciaMatriz(&mat, nL, nC, "lwss.csv");
             }else{
                 printf("opcao invalida!, carregando a default\n");
-                iniciaMatriz(&mat, nL, nC, "lwss.csv");
+                matrizAleatoria(&mat, nL, nC);
             }
             break;
         case 4:
@@ -187,7 +204,7 @@ void menuInicJogo(char **mat, int nL, int nC){
             break;
         default:
             printf("opcao invalida!, carregando a default\n");
-            iniciaMatriz(&mat, nL, nC, "lwss.csv");
+            matrizAleatoria(&mat, nL, nC);
             break;
     }
     imprimeMatriz(mat, nL, nC);
