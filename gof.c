@@ -30,7 +30,6 @@ typedef struct tab{
     char **m;
 } Tab;
 
-
 int main(){
     char **mat; 
     int nl, nc, i;
@@ -210,7 +209,7 @@ void novaMatriz(char **mA, char ***mC, int nL, int nC){
                    if(u == 0 && k == 0){
                        continue;
                    }
-                   // para eleminar a tentativa de ler espaços fora da alocação da matriz.
+                   // para eliminar a tentativa de ler espaços fora da alocação da matriz.
                    if(i-u < 0 || i-u == nL || j-k < 0 || j-k == nC){
                        continue;
                    }
