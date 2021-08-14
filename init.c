@@ -249,6 +249,8 @@ void jogaJogoVida(char **m, int nL, int nC){
         novaMatriz(m, &aux, nL, nC);
         copiaMatriz(m, aux, nL, nC);
         imprimeMatriz(m, nL, nC);
+
+        // windows ou qualquer outro sistema...
         #ifdef OS_windows
             Sleep(200);
             system("cls");
