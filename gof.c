@@ -8,7 +8,7 @@
     #include <windowns.h>
 #endif
 
-#define ORG 'X'
+#define ORG '#'
 #define VAZ '.'
 #define TAM 101
 #define LINESIZE 1024
@@ -97,7 +97,7 @@ void copiaMatriz(char **mat, char **mc, int nL, int nC){
         }
     }
 }
-// le e coloca as posiçoes na matriz de forma aleatoria.
+// le e coloca as posicoes do .csv na matriz de forma aleatoria.
 void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]){
 
     FILE *fp;
@@ -149,7 +149,7 @@ void menuInicJogo(char **mat, int nL, int nC){
             if(opt == 'a'){
                 iniciaMatriz(&mat, nL, nC, "bloco.csv");
             }else if(opt == 'b'){
-                iniciaMatriz(&mat, nL, nC, "bloco.csv");
+                iniciaMatriz(&mat, nL, nC, "et.csv");
             }else{
                 printf("opcao invalida!, carregando a default\n");
                 iniciaMatriz(&mat, nL, nC, "lwss.csv");
