@@ -250,7 +250,7 @@ void jogaJogoVida(char **m, int nL, int nC){
         copiaMatriz(m, aux, nL, nC);
         imprimeMatriz(m, nL, nC);
 
-        // windows ou qualquer outro sistema...
+        // windows ou qualquer outro sistema unix...
         #ifdef OS_windows
             Sleep(200);
             system("cls");
