@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #ifdef  __unix__
     #include <unistd.h>
 #elif defined(_WIN32)
@@ -8,7 +9,7 @@
     #include <windowns.h>
 #endif
 
-#define ORG '#'
+#define ORG 'X'
 #define VAZ '.'
 #define TAM 101
 #define LINESIZE 1024
@@ -20,36 +21,35 @@ typedef struct {
     char **m;
 } Tab;
 
-void alocaMatriz(char ***mt, int nL, int nC);
-void limpaMatriz(char ***m, int nL, int nC);
-void imprimeMatriz(char ***mat, int nL, int nC);
-void copiaMatriz(char ***mat, char ***mc, int nL, int nC);
-void desalocaMatriz(char ***mt, int nL);
-void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]);
+void alocaMatriz(Tab *tabuleiro);
+void limpaMatriz(Tab *tabuleiro);
+void imprimeMatriz(Tab *tabuleiro);
+void copiaMatriz(Tab *Atabuleiro, Tab *tabuleiro);
+void desalocaMatriz(Tab *tabuleiro);
+void iniciaMatriz(Tab *tabuleiro);
 void menuInicJogo(Tab *tabuleiro);
-void jogaJogoVida(Tab *tabuleiro, int *deltaX, int *deltaY);
-void novaMatriz(char ***mA, char ***mC, int nL, int nC);
-void matrizAleatoria(char ***mat, int nL, int nC);
-void rust(Tab *tabuleiro, int deltaX, int deltaY);
+void jogaJogoVida(Tab *tabuleiro);
+void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro);
+void matrizAleatoria(Tab *tabuleiro);
+//void rust(Tab *tabuleiro, int deltaX, int deltaY);
 
 int main(){
     Tab tabuleiro;
     int nl, nc, i, flag, deltaX=0, deltaY=0;
     do{
+        printf("dimensoes do tabuleiro\n");
         printf("nl e nc: ");
         scanf("%d %d", &nl, &nc);
         tabuleiro.dim1 = nl;
         tabuleiro.dim2 = nc; 
 
-        alocaMatriz(&tabuleiro.m, tabuleiro.dim1, tabuleiro.dim2);
+        alocaMatriz(&tabuleiro);
     
         menuInicJogo(&tabuleiro);
     
-        jogaJogoVida(&tabuleiro, &deltaX, &deltaY);
-        deltaX++;
-        deltaY++;
-        
-        desalocaMatriz(&tabuleiro.m, tabuleiro.dim1);
+        jogaJogoVida(&tabuleiro);
+       
+        desalocaMatriz(&tabuleiro);
         printf("começar um novo jogo da vida?(1/0): ");
         scanf("%d", &flag);
     }while(flag);
@@ -57,77 +57,78 @@ int main(){
     return 0;
 }
 
-void alocaMatriz(char ***mt, int nL, int nC){
+void alocaMatriz(Tab *tabuleiro){
     int i;
 
-    *mt = (char**) malloc(nL*sizeof(char*));
+    tabuleiro->m = (char**) malloc(tabuleiro->dim1 * sizeof(char*));
 
-    for(i=0; i < nL; i++){
-        (*mt)[i] = (char*) malloc(nC);
+    for(i=0; i < tabuleiro->dim1; i++){
+        tabuleiro->m[i] = (char*) malloc(tabuleiro->dim2);
     }
 
 }
 
-void desalocaMatriz(char ***mt, int nL){
+void desalocaMatriz(Tab *tabuleiro){
     int i;
-    for(i=0; i < nL; i++){
-        free((*mt)[i]);
+    for(i=0; i < tabuleiro->dim1; i++){
+        free(tabuleiro->m[i]);
     }
-    free(*mt);
+    free(tabuleiro->m);
 }
 
 
-void imprimeMatriz(char ***mat, int nL, int nC){
+void imprimeMatriz(Tab *tabuleiro){
     int i, j;
 
-    for(i=0; i < nL; i++){
-        for(j=0; j < nC; j++){
-            printf("%c", (*mat)[i][j]);
+    for(i=0; i < tabuleiro->dim1; i++){
+        for(j=0; j < tabuleiro->dim2; j++){
+            printf("%c", tabuleiro->m[i][j]);
         }
         printf("\n");
     }
 }
 
-void limpaMatriz(char ***m, int nL, int nC){
+void limpaMatriz(Tab *tabuleiro){
     int i, j;
-    for(i=0;i<nL;i++){
-        for(j=0;j<nC;j++){
-            (*m)[i][j] = VAZ;
+    for(i=0; i < tabuleiro->dim1; i++){
+        for(j=0; j < tabuleiro->dim2; j++){
+            tabuleiro->m[i][j] = VAZ;
         }
     }
 }
 
-void copiaMatriz(char ***mat, char ***mc, int nL, int nC){
+void copiaMatriz(Tab *Atabuleiro, Tab *tabuleiro){
     int i, j;
-    for(i=0; i < nL; i++){
-        for(j=0; j < nC; j++){
-            (*mat)[i][j] = (*mc)[i][j];
+    for(i=0; i < Atabuleiro->dim1; i++){
+        for(j=0; j < Atabuleiro->dim2; j++){
+            Atabuleiro->m[i][j] = tabuleiro->m[i][j];
         }
     }
 }
 // le e coloca as posicoes do .csv na matriz de forma "aleatoria".
-void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]){
+void iniciaMatriz(Tab *tabuleiro){
     FILE *fp;
     int i, n, r, r2, j=0;
     char line[LINESIZE];
     
-    fp = fopen(fileName, "r");
+    fp = fopen(tabuleiro->nomeJogo, "r");
 
     if(fp == NULL){
         printf("ERROR\n");
         exit(1);
     }
     
-    limpaMatriz(mt, nL, nC);
+    limpaMatriz(tabuleiro);
         
     srand(time(NULL));
-    r = rand()%(nL/2);
-    r2 = rand()%(nC/2);
+    r = rand()%(tabuleiro->dim1/2);
+    r2 = rand()%(tabuleiro->dim2/2);
+
     while(fgets(line, LINESIZE, fp) != NULL){
         for(i=0; line[i] != '\0'; i++){
             if(!((int)line[i] == 44 || line[i+1] == '\0')){
                 n = atoi(&line[i])-1;
-                (*mt)[j+r][n+r2] = ORG;
+                tabuleiro->m[j+r][n+r2] = ORG;
             }
         }
         j++;
@@ -136,17 +137,17 @@ void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]){
 }
 
 // coloca todas as posiçoes de forma "aleatoria".
-void matrizAleatoria(char ***mat, int nL, int nC){
+void matrizAleatoria(Tab *tabuleiro){
     int i, j, r;
     srand(time(NULL));
-    limpaMatriz(mat, nL, nC);
-    for(i=0; i < nL; i++){
-        for(j=0; j < nC; j++){
+    limpaMatriz(tabuleiro);
+    for(i=0; i < tabuleiro->dim1; i++){
+        for(j=0; j < tabuleiro->dim2; j++){
             r = rand()%2;
             if(r){
-                (*mat)[i][j] = ORG;
+                tabuleiro->m[i][j] = ORG;
             }else{
-                (*mat)[i][j] = VAZ;
+                tabuleiro->m[i][j] = VAZ;
             }
         }
     }
@@ -171,12 +172,14 @@ void menuInicJogo(Tab *tabuleiro){
             printf("opcao: ");
             scanf(" %c", &opt);
             if(opt == 'a'){
-                iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, "bloco.csv");
+                strcpy(tabuleiro->nomeJogo, "bloco.csv");
+                iniciaMatriz(tabuleiro);
             }else if(opt == 'b'){
-                iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, "et.csv");
+                strcpy(tabuleiro->nomeJogo, "et.csv");
+                iniciaMatriz(tabuleiro);
             }else{
                 printf("opcao invalida!, carregando a default\n");
-                matrizAleatoria(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
+                matrizAleatoria(tabuleiro);
             }
             break;
         case 2:
@@ -184,12 +187,14 @@ void menuInicJogo(Tab *tabuleiro){
             printf("opcao: ");
             scanf(" %c", &opt);
             if(opt == 'a'){
-                iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, "blinker.csv");
+                strcpy(tabuleiro->nomeJogo, "blinker.csv");
+                iniciaMatriz(tabuleiro);
             }else if(opt == 'b'){
-                iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, "sapo.csv");
+                strcpy(tabuleiro->nomeJogo, "sapo.csv");
+                iniciaMatriz(tabuleiro);
             }else{
                 printf("opcao invalida!, carregando a default\n");
-                matrizAleatoria(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
+                matrizAleatoria(tabuleiro);
             }
             break;
         case 3:
@@ -197,34 +202,37 @@ void menuInicJogo(Tab *tabuleiro){
             printf("opcao: ");
             scanf(" %c", &opt);
             if(opt == 'a'){
-                iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, "glider.csv");
+                strcpy(tabuleiro->nomeJogo, "glider.csv");
+                iniciaMatriz(tabuleiro);
             }else if(opt == 'b'){
-                iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, "lwss.csv");
+                strcpy(tabuleiro->nomeJogo, "lwss.csv");
+                iniciaMatriz(tabuleiro);
             }else{
                 printf("opcao invalida!, carregando a default\n");
-                matrizAleatoria(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
+                matrizAleatoria(tabuleiro);
             }
             break;
         case 4:
             printf("nome do arquivo: ");
             scanf("%s", &fileName);
-            iniciaMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2, fileName);
+            strcpy(tabuleiro->nomeJogo, fileName);
+            iniciaMatriz(tabuleiro);
             break;
         default:
             printf("opcao invalida!, carregando a default\n");
-            matrizAleatoria(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
+            matrizAleatoria(tabuleiro);
             break;
     }
-    imprimeMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
+    imprimeMatriz(tabuleiro);
     printf("Se inicializacao correta digite qualquer tecla para iniciar o jogo..."); 
     while(getchar() !='\n'); getchar();
 }
 
-void novaMatriz(char ***mA, char ***mC, int nL, int nC){
+void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro){
     int i, j, s, k, u;
     
-    for(i=0; i < nL; i++){
-        for(j=0; j < nC; j++){
+    for(i=0; i < Atabuleiro->dim1; i++){
+        for(j=0; j < Atabuleiro->dim2; j++){
             s=0;
             // variando de -1 até 1 tirando o 0 que é o próprio elemento.
             for(u=-1; u < 2; u++){
@@ -233,39 +241,49 @@ void novaMatriz(char ***mA, char ***mC, int nL, int nC){
                        continue;
                    }
                    // para eliminar a tentativa de ler espaços fora da alocação da matriz.
-                   if(i-u < 0 || i-u == nL || j-k < 0 || j-k == nC){
+                   if(i-u < 0 || i-u == Atabuleiro->dim1 || j-k < 0 || j-k == Atabuleiro->dim2){
                        continue;
                    }
                    // verificando se está vivo um vizinho.
-                   if((*mA)[i-u][j-k] == ORG){
+                   if(Atabuleiro->m[i-u][j-k] == ORG){
                        s++;
                     }
                 }
             }
-            if((*mA)[i][j] == ORG && s < 2){
-                (*mC)[i][j] = VAZ;
-            }else if((*mA)[i][j] == ORG && s > 3){
-                (*mC)[i][j] = VAZ;
-            }else if((*mA)[i][j] == ORG && (s == 3 || s == 2)){
-                (*mC)[i][j] = ORG;
-            }else if((*mA)[i][j] == VAZ && s == 3){
-                (*mC)[i][j] = ORG;
+            if(Atabuleiro->m[i][j] == ORG && s < 2){
+
+                tabuleiro->m[i][j] = VAZ;
+
+            }else if(Atabuleiro->m[i][j] == ORG && s > 3){
+
+                tabuleiro->m[i][j] = VAZ;
+
+            }else if(Atabuleiro->m[i][j] == ORG && (s == 3 || s == 2)){
+
+                tabuleiro->m[i][j] = ORG;
+
+            }else if(Atabuleiro->m[i][j] == VAZ && s == 3){
+
+                tabuleiro->m[i][j] = ORG;
+
             }else{
-                (*mC)[i][j] = VAZ;
+                tabuleiro->m[i][j] = VAZ;
             }
         }
     }
 }
 
 
-void jogaJogoVida(Tab *tabuleiro, int *deltaX, int *deltaY){
-    char **aux;
+void jogaJogoVida(Tab *tabuleiro){
+    Tab aux;
     int i, k;
 
     printf("numero de ciclos: ");
     scanf("%d", &k);
+    aux.dim1 = tabuleiro->dim1;
+    aux.dim2 = tabuleiro->dim2;
     tabuleiro->ciclosVida = k;
-    alocaMatriz(&aux, tabuleiro->dim1, tabuleiro->dim2);
+    alocaMatriz(&aux);
     
     for(i=0; i < tabuleiro->ciclosVida; i++){
         // windows ou qualquer outro sistema unix like...
@@ -276,10 +294,10 @@ void jogaJogoVida(Tab *tabuleiro, int *deltaX, int *deltaY){
             usleep(200000);
             system("clear");
         #endif
-        novaMatriz(&tabuleiro->m, &aux, tabuleiro->dim1, tabuleiro->dim2);
-        copiaMatriz(&tabuleiro->m, &aux, tabuleiro->dim1, tabuleiro->dim2);
-        imprimeMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
+        novaMatriz(tabuleiro, &aux);
+        copiaMatriz(tabuleiro, &aux);
+        imprimeMatriz(tabuleiro);
     }    
-    desalocaMatriz(&aux, tabuleiro->dim1);
+    desalocaMatriz(&aux);
 }
 
