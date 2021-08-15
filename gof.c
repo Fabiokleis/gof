@@ -27,27 +27,33 @@ void copiaMatriz(char ***mat, char ***mc, int nL, int nC);
 void desalocaMatriz(char ***mt, int nL);
 void iniciaMatriz(char ***mt, int nL, int nC, char fileName[]);
 void menuInicJogo(Tab *tabuleiro);
-void jogaJogoVida(Tab *tabuleiro);
+void jogaJogoVida(Tab *tabuleiro, int *deltaX, int *deltaY);
 void novaMatriz(char ***mA, char ***mC, int nL, int nC);
 void matrizAleatoria(char ***mat, int nL, int nC);
-
+void rust(Tab *tabuleiro, int deltaX, int deltaY);
 
 int main(){
     Tab tabuleiro;
-    int nl, nc, i;
-    //printf("nl e nc: ");
-    //scanf("%d %d", &nl, &nc);
-    tabuleiro.dim1 = 25;
-    tabuleiro.dim2 = 75; 
+    int nl, nc, i, flag, deltaX=0, deltaY=0;
+    do{
+        printf("nl e nc: ");
+        scanf("%d %d", &nl, &nc);
+        tabuleiro.dim1 = nl;
+        tabuleiro.dim2 = nc; 
 
-    alocaMatriz(&tabuleiro.m, tabuleiro.dim1, tabuleiro.dim2);
-
-    menuInicJogo(&tabuleiro);
-
-    jogaJogoVida(&tabuleiro);
-
-    desalocaMatriz(&tabuleiro.m, tabuleiro.dim1);
-
+        alocaMatriz(&tabuleiro.m, tabuleiro.dim1, tabuleiro.dim2);
+    
+        menuInicJogo(&tabuleiro);
+    
+        jogaJogoVida(&tabuleiro, &deltaX, &deltaY);
+        deltaX++;
+        deltaY++;
+        
+        desalocaMatriz(&tabuleiro.m, tabuleiro.dim1);
+        printf("começar um novo jogo da vida?(1/0): ");
+        scanf("%d", &flag);
+    }while(flag);
+    printf("o ciclo encerrou...\n");
     return 0;
 }
 
@@ -249,20 +255,20 @@ void novaMatriz(char ***mA, char ***mC, int nL, int nC){
             }
         }
     }
-    
 }
 
-void jogaJogoVida(Tab *tabuleiro){
+
+void jogaJogoVida(Tab *tabuleiro, int *deltaX, int *deltaY){
     char **aux;
-    int k;
-    int i;
+    int i, k;
 
     printf("numero de ciclos: ");
     scanf("%d", &k);
+    tabuleiro->ciclosVida = k;
     alocaMatriz(&aux, tabuleiro->dim1, tabuleiro->dim2);
     
-    for(i=0; i < k; i++){
-        // windows ou qualquer outro sistema unix...
+    for(i=0; i < tabuleiro->ciclosVida; i++){
+        // windows ou qualquer outro sistema unix like...
         #ifdef OS_windows
             Sleep(200);
             system("cls");
@@ -273,8 +279,7 @@ void jogaJogoVida(Tab *tabuleiro){
         novaMatriz(&tabuleiro->m, &aux, tabuleiro->dim1, tabuleiro->dim2);
         copiaMatriz(&tabuleiro->m, &aux, tabuleiro->dim1, tabuleiro->dim2);
         imprimeMatriz(&tabuleiro->m, tabuleiro->dim1, tabuleiro->dim2);
-    }
-    
+    }    
     desalocaMatriz(&aux, tabuleiro->dim1);
 }
 
