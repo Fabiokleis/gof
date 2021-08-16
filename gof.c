@@ -310,7 +310,7 @@ void jogaJogoVida(Tab *tabuleiro, int *delta){
         if(i >= tabuleiro->ciclosVida/2-*delta){
 
             // a cada ciclo é gerado pontos de "ferrugem" equivalente ao número da variação
-            for(j=0; j < *delta; j++){
+            for(j=0; (j < *delta) && (*delta < tabuleiro->dim1 && *delta < tabuleiro->dim2); j++){
                 rust(&aux, j);
             }
         }
