@@ -2,15 +2,19 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+// verificando e definindo tempo para cada plataforma...
 #ifdef  __unix__
     #include <unistd.h>
+    #define U_time 100000
 #elif defined(_WIN32)
     #define OS_Windows
     #include <windowns.h>
+    #define 100
 #endif
 
 #define ORG 'X'
 #define VAZ '.'
+#define RUST '%'
 #define TAM 101
 #define LINESIZE 1024
 
@@ -28,14 +32,14 @@ void copiaMatriz(Tab *Atabuleiro, Tab *tabuleiro);
 void desalocaMatriz(Tab *tabuleiro);
 void iniciaMatriz(Tab *tabuleiro);
 void menuInicJogo(Tab *tabuleiro);
-void jogaJogoVida(Tab *tabuleiro);
+void jogaJogoVida(Tab *tabuleiro, int *delta);
 void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro);
 void matrizAleatoria(Tab *tabuleiro);
-//void rust(Tab *tabuleiro, int deltaX, int deltaY);
+void rust(Tab *tabuleiro, int seed);
 
 int main(){
     Tab tabuleiro;
-    int nl, nc, i, flag, deltaX=0, deltaY=0;
+    int nl, nc, i, flag, delta=0;
     do{
         printf("dimensoes do tabuleiro\n");
         printf("nl e nc: ");
@@ -47,12 +51,14 @@ int main(){
     
         menuInicJogo(&tabuleiro);
     
-        jogaJogoVida(&tabuleiro);
-       
+        jogaJogoVida(&tabuleiro, &delta);
+ 
         desalocaMatriz(&tabuleiro);
+
         printf("começar um novo jogo da vida?(1/0): ");
         scanf("%d", &flag);
-    }while(flag);
+        delta++;
+   }while(flag);
     printf("o ciclo encerrou...\n");
     return 0;
 }
@@ -250,33 +256,36 @@ void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro){
                     }
                 }
             }
+            
             if(Atabuleiro->m[i][j] == ORG && s < 2){
-
                 tabuleiro->m[i][j] = VAZ;
-
             }else if(Atabuleiro->m[i][j] == ORG && s > 3){
-
-                tabuleiro->m[i][j] = VAZ;
-
-            }else if(Atabuleiro->m[i][j] == ORG && (s == 3 || s == 2)){
-
+                tabuleiro->m[i][j] = VAZ;   
+            }else if(Atabuleiro->m[i][j] == ORG && (s == 3 || s == 2)){ 
                 tabuleiro->m[i][j] = ORG;
-
             }else if(Atabuleiro->m[i][j] == VAZ && s == 3){
-
                 tabuleiro->m[i][j] = ORG;
-
-            }else{
+            }else if(Atabuleiro->m[i][j] != RUST){
                 tabuleiro->m[i][j] = VAZ;
             }
         }
     }
 }
 
+// cria pontos de "ferrugem" no tabuleiro.
+void rust(Tab *tabuleiro, int seed){
+    int c, l;
+    srand(time(NULL));
 
-void jogaJogoVida(Tab *tabuleiro){
+    c = seed+rand()%(tabuleiro->dim2-seed);
+    l = seed+rand()%(tabuleiro->dim1-seed);
+ 
+    tabuleiro->m[l][c] = RUST;
+}
+
+void jogaJogoVida(Tab *tabuleiro, int *delta){
     Tab aux;
-    int i, k;
+    int i, k, j;
 
     printf("numero de ciclos: ");
     scanf("%d", &k);
@@ -288,16 +297,28 @@ void jogaJogoVida(Tab *tabuleiro){
     for(i=0; i < tabuleiro->ciclosVida; i++){
         // windows ou qualquer outro sistema unix like...
         #ifdef OS_windows
-            Sleep(200);
+            Sleep(W_time);
             system("cls");
         #else
-            usleep(200000);
+            usleep(U_time);
             system("clear");
         #endif
+
         novaMatriz(tabuleiro, &aux);
+
+        // a partir da metade dos ciclos de vida menos a variação inicia o processo de rust
+        if(i >= tabuleiro->ciclosVida/2-*delta){
+
+            // a cada ciclo é gerado pontos de "ferrugem" equivalente ao número da variação
+            for(j=0; j < *delta; j++){
+                rust(&aux, j);
+            }
+        }
+        
         copiaMatriz(tabuleiro, &aux);
+
         imprimeMatriz(tabuleiro);
     }    
+
     desalocaMatriz(&aux);
 }
-
