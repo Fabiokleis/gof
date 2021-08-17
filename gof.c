@@ -5,11 +5,11 @@
 // verificando e definindo tempo para cada plataforma...
 #ifdef  __unix__
     #include <unistd.h>
-    #define U_time 100000
+    #define U_time 100000 // micro 
 #elif defined(_WIN32)
     #define OS_Windows
     #include <windowns.h>
-    #define 100
+    #define W_time 100 // mili
 #endif
 
 #define ORG 'X'
