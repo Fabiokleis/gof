@@ -3,12 +3,12 @@
 #include <time.h>
 #include <string.h>
 // verificando e definindo tempo para cada plataforma...
-#ifdef  __unix__
+#ifdef  __linux__
     #include <unistd.h>
     #define U_time 100000 // micro 
 #else
     #define OS_Windows
-    #include <windowns.h>
+    #include <windows.h>
     #define W_time 100 // mili
 #endif
 
@@ -296,7 +296,7 @@ void jogaJogoVida(Tab *tabuleiro, int *delta){
     
     for(i=0; i < tabuleiro->ciclosVida; i++){
         // windows ou qualquer outro sistema unix like...
-        #ifdef OS_windows
+        #ifdef OS_Windows
             Sleep(W_time);
             system("cls");
         #else
