@@ -6,7 +6,7 @@
 #ifdef  __unix__
     #include <unistd.h>
     #define U_time 100000 // micro 
-#elif defined(_WIN32)
+#else
     #define OS_Windows
     #include <windowns.h>
     #define W_time 100 // mili
