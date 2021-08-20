@@ -14,7 +14,7 @@
 
 #define ORG 'X'
 #define VAZ '.'
-#define RUST '%'
+#define INV '@'
 #define TAM 101
 #define LINESIZE 1024
 
@@ -35,7 +35,6 @@ void menuInicJogo(Tab *tabuleiro);
 void jogaJogoVida(Tab *tabuleiro, int *delta);
 void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro);
 void matrizAleatoria(Tab *tabuleiro);
-void rust(Tab *tabuleiro, int seed);
 void xAttck(Tab *tabuleiro, int seed);
 
 int main(){
@@ -237,11 +236,12 @@ void menuInicJogo(Tab *tabuleiro){
 }
 
 void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro){
-    int i, j, s, k, u;
+    int i, j, s, s2, k, u;
     
     for(i=0; i < Atabuleiro->dim1; i++){
         for(j=0; j < Atabuleiro->dim2; j++){
-            s=0;
+            s = 0;
+            s2 = 0;
             // variando de -1 até 1 tirando o 0 que é o próprio elemento.
             for(u=-1; u < 2; u++){
                 for(k=-1; k < 2; k++){
@@ -255,7 +255,9 @@ void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro){
                    // verificando se está vivo um vizinho.
                    if(Atabuleiro->m[i-u][j-k] == ORG){
                        s++;
-                    }
+                   }else if(Atabuleiro->m[i-u][j-k] == INV){
+                       s2++;
+                   }
                 }
             }
             
@@ -267,22 +269,21 @@ void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro){
                 tabuleiro->m[i][j] = ORG;
             }else if(Atabuleiro->m[i][j] == VAZ && s == 3){
                 tabuleiro->m[i][j] = ORG;
-            }else if(Atabuleiro->m[i][j] != RUST){
+            }else if(Atabuleiro->m[i][j] == INV && s2 < 2){
+                tabuleiro->m[i][j] = VAZ;
+            }else if(Atabuleiro->m[i][j] == INV && s2 > 3){
+                tabuleiro->m[i][j] = VAZ;   
+            }else if(Atabuleiro->m[i][j] == INV && (s2 == 3 || s2 == 2)){ 
+                tabuleiro->m[i][j] = INV;
+            }else if(Atabuleiro->m[i][j] == VAZ && s2 == 3){
+                tabuleiro->m[i][j] = INV;
+            }else{
                 tabuleiro->m[i][j] = VAZ;
             }
+
+
         }
     }
-}
-
-// cria pontos de "ferrugem" no tabuleiro.
-void rust(Tab *tabuleiro, int seed){
-    int c, l;
-    srand(time(NULL));
-
-    c = seed+rand()%(tabuleiro->dim2-seed);
-    l = seed+rand()%(tabuleiro->dim1-seed);
- 
-    tabuleiro->m[l][c] = RUST;
 }
 
 // invasao!
@@ -302,8 +303,8 @@ void xAttck(Tab *tabuleiro, int seed){
             continue;
         }
         
-        tabuleiro->m[l-i][c] = ORG;
-        tabuleiro->m[l][c-i] = ORG;
+        tabuleiro->m[l-i][c] = INV;
+        tabuleiro->m[l][c-i] = INV;
     }
 
 }
@@ -330,14 +331,6 @@ void jogaJogoVida(Tab *tabuleiro, int *delta){
 
         novaMatriz(tabuleiro, &aux);
 
-        // a partir da metade dos ciclos de vida menos a variação inicia o processo de rust
-        if(i >= tabuleiro->ciclosVida/2-*delta){
-
-            // a cada ciclo é gerado pontos de "ferrugem" equivalente ao número da variação
-            for(j=0; (j < *delta) && (*delta < tabuleiro->dim1 && *delta < tabuleiro->dim2); j++){
-                rust(&aux, j); 
-            }
-        }
         // limita a invasao para tabuleiro maiores que 24x74
         if(tabuleiro->dim1 >= 25 && tabuleiro->dim2 >= 75){
             // i % 10 -> para que apareça menos invasoes
