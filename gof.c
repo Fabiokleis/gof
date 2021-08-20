@@ -3,7 +3,7 @@
 #include <time.h>
 #include <string.h>
 // verificando e definindo tempo para cada plataforma...
-#ifdef  __linux__
+#ifdef  __unix__
     #include <unistd.h>
     #define U_time 100000 // micro 
 #else
@@ -298,17 +298,12 @@ void xAttck(Tab *tabuleiro, int seed){
     //  X
     
     for(i=-1; i < 2; i++){
-        if(l-i == tabuleiro->dim1 || l-i < 0){
+        if(l-i == tabuleiro->dim1 || l-i < 0 || c-i == tabuleiro->dim2 || c-i < 0){
             continue;
         }
-        tabuleiro->m[l-i][c] = ORG; 
-    }
-    for(i=-1; i < 2; i++){
-        if(c-i == tabuleiro->dim2 || c-i < 0){
-            continue;
-        }
-        tabuleiro->m[l][c-i] = ORG;
         
+        tabuleiro->m[l-i][c] = ORG;
+        tabuleiro->m[l][c-i] = ORG;
     }
 
 }
