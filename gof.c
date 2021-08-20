@@ -36,21 +36,23 @@ void jogaJogoVida(Tab *tabuleiro, int *delta);
 void novaMatriz(Tab *Atabuleiro, Tab *tabuleiro);
 void matrizAleatoria(Tab *tabuleiro);
 void rust(Tab *tabuleiro, int seed);
+void xAttck(Tab *tabuleiro, int seed);
 
 int main(){
     Tab tabuleiro;
     int nl, nc, i, flag, delta=0;
+    printf("JOGO DA VIDA!\n");
     do{
         printf("dimensoes do tabuleiro\n");
-        printf("nl e nc: ");
+        printf("numero de linhas e numero de colunas: ");
         scanf("%d %d", &nl, &nc);
         tabuleiro.dim1 = nl;
         tabuleiro.dim2 = nc; 
-
+        
         alocaMatriz(&tabuleiro);
-    
-        menuInicJogo(&tabuleiro);
-    
+   
+        menuInicJogo(&tabuleiro);  
+
         jogaJogoVida(&tabuleiro, &delta);
  
         desalocaMatriz(&tabuleiro);
@@ -283,10 +285,37 @@ void rust(Tab *tabuleiro, int seed){
     tabuleiro->m[l][c] = RUST;
 }
 
+// invasao!
+void xAttck(Tab *tabuleiro, int seed){
+    int c, l, i;
+    srand(time(NULL));
+
+    c = seed+rand()%(tabuleiro->dim2-seed);
+    l = seed+rand()%(tabuleiro->dim1-seed);
+
+    //  X
+    // XXX
+    //  X
+    
+    for(i=-1; i < 2; i++){
+        if(l-i == tabuleiro->dim1 || l-i < 0){
+            continue;
+        }
+        tabuleiro->m[l-i][c] = ORG; 
+    }
+    for(i=-1; i < 2; i++){
+        if(c-i == tabuleiro->dim2 || c-i < 0){
+            continue;
+        }
+        tabuleiro->m[l][c-i] = ORG;
+        
+    }
+
+}
+
 void jogaJogoVida(Tab *tabuleiro, int *delta){
     Tab aux;
     int i, k, j;
-
     printf("numero de ciclos: ");
     scanf("%d", &k);
     aux.dim1 = tabuleiro->dim1;
@@ -311,10 +340,18 @@ void jogaJogoVida(Tab *tabuleiro, int *delta){
 
             // a cada ciclo é gerado pontos de "ferrugem" equivalente ao número da variação
             for(j=0; (j < *delta) && (*delta < tabuleiro->dim1 && *delta < tabuleiro->dim2); j++){
-                rust(&aux, j);
+                rust(&aux, j); 
             }
         }
-        
+        // limita a invasao para tabuleiro maiores que 24x74
+        if(tabuleiro->dim1 >= 25 && tabuleiro->dim2 >= 75){
+            // i % 10 -> para que apareça menos invasoes
+            // a partir da metade dos ciclos de vida menos a variação, e o numero de geraçoes maior ou igual a 2 
+            if((i % 10 == 0) && (*delta >= 2 && i >= (tabuleiro->ciclosVida/2-*delta))){
+                xAttck(&aux, *delta);
+            }
+        }
+
         copiaMatriz(tabuleiro, &aux);
 
         imprimeMatriz(tabuleiro);
